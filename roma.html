@@ -1,0 +1,1338 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#161412">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" href="icon-192.png">
+<title>Roma · Coach</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Playfair+Display:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════════
+   ROMA — grises fríos + rojo único
+   Todo controlado por JS, no por el LLM
+═══════════════════════════════════════════ */
+:root{
+  --r0:hsl(220,8%,10%);
+  --r1:hsl(220,7%,13%);
+  --r2:hsl(220,7%,16%);
+  --r3:hsl(220,6%,20%);
+  --r4:hsl(220,5%,26%);
+  --r5:hsl(220,5%,36%);
+  --r6:hsl(220,4%,50%);
+  --r7:hsl(220,4%,66%);
+  --r8:hsl(220,3%,80%);
+  --r9:hsl(220,3%,92%);
+  --red:#e8412a;
+  --red-dim:rgba(232,65,42,.55);
+  --red-glow:rgba(232,65,42,.15);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden;background:var(--r0)}
+body{font-family:'DM Mono',monospace;display:flex;flex-direction:column;height:100dvh;color:var(--r8)}
+
+/* ── HEADER ── */
+.hdr{
+  flex-shrink:0;padding:12px 16px 10px;
+  background:var(--r1);
+  border-bottom:1px solid var(--r3);
+  display:flex;align-items:center;justify-content:space-between;
+  position:relative;
+}
+.hdr::after{
+  content:'';position:absolute;top:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent,var(--red) 30%,rgba(255,120,80,.9) 50%,var(--red) 70%,transparent);
+  animation:linebreath 3s ease-in-out infinite;
+}
+@keyframes linebreath{0%,100%{opacity:.55}50%{opacity:1}}
+.hdr-l{display:flex;align-items:center;gap:11px}
+.logo{
+  width:38px;height:38px;border-radius:13px;flex-shrink:0;
+  background:var(--r2);border:1px solid var(--r4);
+  display:flex;align-items:center;justify-content:center;
+  font-size:11px;font-weight:500;color:var(--red);letter-spacing:.1em;
+}
+.hdr-title{font-size:13px;font-weight:500;letter-spacing:.2em;color:var(--r8)}
+.hdr-sub{font-size:7px;color:var(--r5);letter-spacing:.1em;margin-top:2px;line-height:1}
+.hdr-r{display:flex;gap:6px;align-items:center}
+.session-badge{
+  font-size:7px;padding:3px 10px;border-radius:20px;
+  background:var(--red-glow);color:var(--red);
+  border:1px solid rgba(232,65,42,.25);letter-spacing:.08em;
+  display:none;animation:badgepulse 2s ease-in-out infinite;
+}
+.session-badge.show{display:block}
+@keyframes badgepulse{0%,100%{opacity:.6}50%{opacity:1}}
+.hdr-btn{
+  width:30px;height:30px;border-radius:9px;
+  background:var(--r2);border:1px solid var(--r3);
+  display:flex;align-items:center;justify-content:center;
+  font-size:13px;cursor:pointer;color:var(--r6);
+}
+
+/* ── PANTALLA INICIO ── */
+#screen-inicio{
+  flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:24px;gap:20px;background:var(--r0);overflow-y:auto;
+}
+.inicio-rutina-card{
+  width:100%;max-width:360px;
+  background:var(--r1);border:1px solid var(--r3);border-radius:18px;padding:20px;
+}
+.inicio-dia{font-size:7px;color:var(--red-dim);letter-spacing:.2em;margin-bottom:6px}
+.inicio-nombre{font-size:20px;font-weight:300;color:var(--r9);font-family:'Playfair Display',serif;margin-bottom:4px}
+.inicio-meta{font-size:9px;color:var(--r6);letter-spacing:.06em;margin-bottom:16px}
+.inicio-ex-preview{display:flex;flex-direction:column;gap:6px;margin-bottom:18px}
+.inicio-ex-row{display:flex;align-items:center;gap:10px;padding:8px 10px;background:var(--r2);border-radius:10px}
+.inicio-ex-num{font-size:8px;color:var(--red-dim);letter-spacing:.06em;width:16px}
+.inicio-ex-name{font-size:12px;color:var(--r7);flex:1}
+.inicio-ex-detail{font-size:8px;color:var(--r5);letter-spacing:.04em}
+.btn-start{
+  width:100%;padding:14px;
+  background:rgba(232,65,42,.08);border:1px solid rgba(232,65,42,.3);
+  border-radius:14px;color:var(--red);
+  font-family:'DM Mono',monospace;font-size:11px;font-weight:500;
+  letter-spacing:.12em;cursor:pointer;transition:.15s;
+}
+.btn-start:active{background:rgba(232,65,42,.14);transform:scale(.97)}
+.descanso-card{
+  width:100%;max-width:360px;
+  background:var(--r1);border:1px solid var(--r3);border-radius:18px;
+  padding:20px;text-align:center;
+  font-size:13px;color:var(--r6);line-height:1.6;
+  display:none;
+}
+
+/* ── PANTALLA SESIÓN ── */
+#screen-sesion{
+  flex:1;display:none;flex-direction:column;overflow:hidden;background:var(--r0);
+}
+
+/* Card ejercicio */
+.ex-card{
+  flex-shrink:0;margin:12px 14px 0;
+  background:var(--r1);border:1px solid var(--r3);border-radius:16px;
+  overflow:hidden;
+}
+.ex-gif{
+  width:100%;height:160px;object-fit:cover;display:block;
+  background:var(--r2);
+}
+.ex-gif-placeholder{
+  width:100%;height:120px;background:var(--r2);
+  display:flex;align-items:center;justify-content:center;
+  font-size:40px;
+}
+.ex-info{padding:12px 14px 10px}
+.ex-eyebrow{font-size:7px;color:var(--r5);letter-spacing:.18em;margin-bottom:5px}
+.ex-name{font-size:19px;font-weight:300;color:var(--r9);font-family:'Playfair Display',serif;margin-bottom:3px}
+.ex-meta{font-size:8.5px;color:var(--r5);letter-spacing:.05em;margin-bottom:10px}
+.ex-tip{font-size:10.5px;color:var(--r6);line-height:1.5;margin-bottom:8px;padding-left:9px;border-left:2px solid rgba(232,65,42,.25)}
+.ex-target{font-size:11.5px;color:var(--red-dim);font-weight:600;letter-spacing:.02em;margin-bottom:9px}
+.ex-dots{display:flex;gap:4px;margin-bottom:8px}
+.ex-dot{flex:1;height:3px;border-radius:10px;background:var(--r3)}
+.ex-dot.done{background:var(--red);opacity:.55}
+.ex-dot.now{background:var(--red);animation:dotnow 1.2s ease-in-out infinite}
+@keyframes dotnow{0%,100%{opacity:.35}50%{opacity:1;box-shadow:0 0 7px var(--red)}}
+.ex-chips{display:flex;gap:5px;flex-wrap:wrap}
+.chip{
+  padding:3px 9px;border-radius:20px;font-size:8px;
+  background:var(--r2);border:1px solid var(--r4);color:var(--r6);
+  letter-spacing:.04em;
+}
+.chip.red{background:rgba(232,65,42,.06);border-color:rgba(232,65,42,.2);color:var(--red-dim)}
+
+/* Scroll body de sesión */
+.sesion-body{
+  flex:1;overflow-y:auto;padding:12px 14px;
+  display:flex;flex-direction:column;gap:10px;
+  -webkit-overflow-scrolling:touch;
+}
+.sesion-body::-webkit-scrollbar{display:none}
+
+/* TIMER — el protagonista */
+.timer-card{
+  background:var(--r1);border:1px solid var(--r3);border-radius:18px;
+  padding:24px 16px 20px;text-align:center;
+  position:relative;overflow:hidden;
+  display:none;flex-direction:column;align-items:center;
+  flex-shrink:0;
+}
+.timer-card.show{display:flex}
+.timer-card::before{
+  content:'';position:absolute;top:-50px;left:50%;transform:translateX(-50%);
+  width:200px;height:100px;
+  background:radial-gradient(ellipse,rgba(232,65,42,.12) 0%,transparent 70%);
+  animation:glowbreath 2s ease-in-out infinite;pointer-events:none;
+}
+@keyframes glowbreath{0%,100%{opacity:.5}50%{opacity:1}}
+.timer-lbl{font-size:8px;letter-spacing:.28em;color:var(--r5);margin-bottom:4px;position:relative}
+.timer-num{
+  font-size:78px;font-weight:300;color:var(--red);
+  line-height:1;letter-spacing:-.04em;position:relative;
+  animation:timerfire 1s ease-in-out infinite;
+}
+@keyframes timerfire{
+  0%,100%{text-shadow:0 0 35px rgba(232,65,42,.3),0 0 70px rgba(232,65,42,.1)}
+  50%{text-shadow:0 0 55px rgba(232,65,42,.6),0 0 110px rgba(232,65,42,.22)}
+}
+.timer-of{font-size:8px;letter-spacing:.2em;color:var(--r4);margin-top:4px;position:relative}
+.timer-bar{
+  position:absolute;bottom:14px;left:22px;right:22px;
+  height:2px;background:var(--r3);border-radius:10px;overflow:hidden;
+}
+.timer-fill{
+  height:100%;width:100%;
+  background:linear-gradient(90deg,rgba(140,15,5,.6),var(--red));
+  border-radius:10px;transition:width .5s linear;
+  box-shadow:0 0 8px rgba(232,65,42,.4);
+  position:relative;
+}
+.timer-cursor{
+  position:absolute;right:-1px;top:-3px;bottom:-3px;
+  width:3px;border-radius:10px;background:#fff;opacity:.5;
+  box-shadow:0 0 8px rgba(255,255,255,.7);
+  animation:cursorpulse 1s ease-in-out infinite;
+}
+@keyframes cursorpulse{0%,100%{opacity:.35}50%{opacity:.75}}
+
+/* Coach — hilo real, scrolleable, con burbujas de usuario y de Roma */
+.coach-thread{
+  display:flex;flex-direction:column;gap:8px;
+  max-height:38vh;overflow-y:auto;-webkit-overflow-scrolling:touch;
+  flex-shrink:0;padding-right:2px;
+}
+.coach-thread::-webkit-scrollbar{display:none}
+.coach-msg{
+  border-radius:0 13px 13px 13px;
+  padding:11px 13px;
+  font-size:13px;line-height:1.6;
+  max-width:92%;
+}
+.coach-msg.roma{
+  background:var(--r1);border:1px solid var(--r3);
+  border-left:2px solid rgba(232,65,42,.3);
+  color:var(--r7);align-self:flex-start;
+}
+.coach-msg.user{
+  background:var(--r2);border:1px solid var(--r4);
+  border-radius:13px 0 13px 13px;
+  color:var(--r8);align-self:flex-end;
+}
+.coach-msg.typing{opacity:.5;font-style:italic}
+.coach-tag{font-size:6.5px;color:var(--r5);letter-spacing:.16em;display:block;margin-bottom:5px}
+
+/* Historial de sets */
+.hist-title{font-size:7px;color:var(--r4);letter-spacing:.16em;margin-top:4px;margin-bottom:4px}
+.hist-sets{display:flex;flex-wrap:wrap;gap:5px}
+.hist-chip{
+  padding:4px 10px;border-radius:20px;font-size:8.5px;
+  background:rgba(232,65,42,.06);border:1px solid rgba(232,65,42,.15);
+  color:rgba(232,65,42,.6);
+}
+
+/* Botones de set */
+.set-btns{display:flex;gap:8px;flex-shrink:0;display:none}
+.set-btns.show{display:flex}
+.set-btn{
+  flex:1;padding:14px 6px;border-radius:14px;
+  font-family:'DM Mono',monospace;font-size:9.5px;font-weight:400;
+  cursor:pointer;border:1px solid;
+  display:flex;flex-direction:column;align-items:center;gap:4px;
+  letter-spacing:.05em;transition:.15s;
+}
+.set-btn:active{transform:scale(.94)}
+.set-btn-ico{font-size:18px;line-height:1}
+.btn-ok{background:var(--r2);border-color:var(--r4);color:var(--r6)}
+.btn-up{background:rgba(232,65,42,.06);border-color:rgba(232,65,42,.22);color:rgba(232,65,42,.7)}
+.btn-dn{background:var(--r2);border-color:var(--r4);color:var(--r5)}
+
+/* Footer */
+.footer{
+  flex-shrink:0;padding:10px 14px 24px;
+  background:var(--r1);border-top:1px solid var(--r3);
+}
+.inp-row{display:flex;gap:8px}
+.inp{
+  flex:1;background:var(--r2);border:1px solid var(--r4);
+  border-radius:14px;color:var(--r8);
+  font-family:'DM Mono',monospace;font-size:14px;font-weight:300;
+  padding:11px 14px;outline:none;-webkit-appearance:none;transition:.2s;
+}
+.inp:focus{border-color:var(--r6)}
+.inp::placeholder{color:var(--r4)}
+.send-btn{
+  padding:11px 17px;
+  background:var(--r2);border:1px solid var(--r4);
+  border-radius:14px;color:var(--red);font-size:16px;cursor:pointer;
+  animation:sendfire 3s ease-in-out infinite;
+}
+@keyframes sendfire{0%,100%{box-shadow:none}50%{box-shadow:0 0 16px rgba(232,65,42,.1)}}
+
+/* ── PANTALLA HISTORIAL ── */
+#screen-hist{
+  flex:1;display:none;flex-direction:column;overflow:hidden;background:var(--r0);
+}
+.hist-body{flex:1;overflow-y:auto;padding:14px}
+.hist-sesion-card{
+  background:var(--r1);border:1px solid var(--r3);border-radius:14px;
+  padding:14px;margin-bottom:10px;
+}
+.hist-sesion-fecha{font-size:7px;color:var(--r5);letter-spacing:.14em;margin-bottom:4px}
+.hist-sesion-rutina{font-size:15px;font-weight:300;color:var(--r8);font-family:'Playfair Display',serif;margin-bottom:10px}
+.hist-ex-item{padding:6px 0;border-bottom:1px solid var(--r2);font-size:11px;color:var(--r6)}
+.hist-ex-item:last-child{border-bottom:none}
+
+/* ── TOAST ── */
+#toast{
+  position:fixed;bottom:90px;left:50%;transform:translateX(-50%);
+  background:var(--r3);color:var(--r8);
+  font-size:11px;padding:8px 16px;border-radius:20px;
+  border:1px solid var(--r4);letter-spacing:.04em;
+  opacity:0;transition:opacity .25s;pointer-events:none;z-index:999;white-space:nowrap;
+}
+#toast.show{opacity:1}
+
+/* ── PANTALLA DESCANSO ── */
+#screen-descanso{
+  display:none;position:fixed;inset:0;z-index:100;
+  background:var(--r0);flex-direction:column;align-items:center;justify-content:center;
+  gap:0;
+}
+#screen-descanso.show{display:flex}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="hdr">
+  <div class="hdr-l">
+    <div class="logo">RM</div>
+    <div>
+      <div class="hdr-title">ROMA</div>
+      <div class="hdr-sub" id="hdr-sub">Lista para entrenar</div>
+    </div>
+  </div>
+  <div class="hdr-r">
+    <span class="session-badge" id="session-badge">● SESIÓN</span>
+    <div class="hdr-btn" onclick="showScreen('hist')" title="Historial">📊</div>
+    <div class="hdr-btn" onclick="showScreen('inicio')" title="Inicio">⌂</div>
+  </div>
+</div>
+
+<!-- ══ PANTALLA: INICIO ══ -->
+<div id="screen-inicio">
+  <div id="inicio-content" style="width:100%;max-width:360px;display:flex;flex-direction:column;gap:14px"></div>
+</div>
+
+<!-- ══ PANTALLA: SESIÓN ══ -->
+<div id="screen-sesion">
+
+  <!-- Card ejercicio fijo -->
+  <div class="ex-card" id="ex-card" style="display:none">
+    <div id="ex-gif-wrap"></div>
+    <div class="ex-info">
+      <div class="ex-eyebrow" id="ex-eyebrow">EJERCICIO</div>
+      <div class="ex-name" id="ex-name">—</div>
+      <div class="ex-meta" id="ex-meta"></div>
+      <div class="ex-tip" id="ex-tip"></div>
+      <div class="ex-target" id="ex-target"></div>
+      <div class="ex-dots" id="ex-dots"></div>
+      <div class="ex-chips" id="ex-chips"></div>
+    </div>
+  </div>
+
+  <!-- Body scrollable -->
+  <div class="sesion-body" id="sesion-body">
+
+    <!-- Timer — vive aquí, se muestra/oculta -->
+    <div class="timer-card" id="timer-card">
+      <div class="timer-lbl">DESCANSO</div>
+      <div class="timer-num" id="timer-num">0:00</div>
+      <div class="timer-of" id="timer-of">DE 0:00</div>
+      <div class="timer-bar"><div class="timer-fill" id="timer-fill"><div class="timer-cursor"></div></div></div>
+    </div>
+
+    <!-- Coach — hilo real con scroll, no una sola burbuja -->
+    <div class="coach-thread" id="coach-thread">
+      <span class="coach-tag">ROMA</span>
+    </div>
+    <div class="coach-msg roma typing" id="coach-typing" style="display:none">···</div>
+
+    <!-- Historial de sets del ejercicio actual -->
+    <div id="sets-hist-wrap" style="display:none">
+      <div class="hist-title">SETS COMPLETADOS</div>
+      <div class="hist-sets" id="sets-hist"></div>
+    </div>
+
+    <!-- Botones de set -->
+    <div class="set-btns" id="set-btns">
+      <button class="set-btn btn-ok" onclick="logSet('ok')">
+        <span class="set-btn-ico">✓</span>OK
+      </button>
+      <button class="set-btn btn-up" onclick="logSet('up')">
+        <span class="set-btn-ico">↑</span>SUBÍ
+      </button>
+      <button class="set-btn btn-dn" onclick="logSet('dn')">
+        <span class="set-btn-ico">↓</span>BAJÉ
+      </button>
+    </div>
+
+  </div>
+
+  <!-- Footer -->
+  <div class="footer">
+    <div class="inp-row">
+      <input class="inp" id="inp" placeholder="Escribe peso y reps, o pregunta algo…"
+        onkeydown="if(event.key==='Enter'){sendMsg();event.preventDefault()}">
+      <button class="send-btn" onclick="sendMsg()">➤</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ PANTALLA: HISTORIAL ══ -->
+<div id="screen-hist">
+  <div class="hist-body" id="hist-body">
+    <div style="font-size:8px;color:var(--r5);letter-spacing:.16em;margin-bottom:14px">HISTORIAL DE SESIONES</div>
+    <div id="hist-content"></div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ═══════════════════════════════════════════════════════
+// VERTEX AI — Service Account (mismo que Leonor)
+// ═══════════════════════════════════════════════════════
+const VERTEX_SA={
+  project_id:'leonor-493610-f14b8',
+  client_email:'vertex-express@leonor-493610-f14b8.iam.gserviceaccount.com',
+  private_key:`-----BEGIN PRIVATE KEY-----\nMIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQDt6xfH0R+lrIGS\nHghqkRKgynKq5mv/u/LgMYpfdFi0ZFeWS4oFGNkIztUufDLRQhE3GbUQGNqAT0Pj\nutFYmR0Mr6eFwh/UrHQTicq1oZtZN2WeW72dyfnVePoQcLqHqgDE1oddjcflePhS\n19C9nCzrsAC8LiyyNzcM9NTCyZWd1pbmu+XvmNpSrzWPt4+xFtAeZvVHeXwD0Ngm\nr0UHZ4z3dV/qCXA4PrK51fqUqmeQ7fpOOCLtm2FDl0kb7q6IXgN//fzKGeILYPnO\naBsXS3k8lslbjvdt864xaMgOTXrS5fstvmgIV/ITR+U1PxwolMUsZGnAKItYUuRy\nNLpKNKKZAgMBAAECggEAFc6hnGAPrYjVS4ZTMSlg8rn7rqx2I7efeGsyCrPIWaiE\n2rLL0NHJOuRyZ9NceQ+8Mje5/+K3TGF3kI0UGTHXls0W5sy3TDAOZ6gOm31XluLb\n/prcE3Vq3+U5zn32qu6rKV+cgre3JdJjuHwtluOUvnmgZ58325HyCs76HWyKuS+/\n4R8seYD22gI/1NL6KDA4I6b2H5zV8hVMckJ1DSHq+FFH76r2dMGNSQSYqRrBFsqU\nWq31PsvimsaiI4Sdxg7yRhPSdqIJqRdEUreWXYYtSGcrKgfHUNq2uEeVEGPXoJm2\n77wXarM1rax2gGKOD9qrxP99IHDCF/0Oy5MgMdq+sQKBgQD3kPRntDSD1qxZYE3o\nAE0MmR1mFAC8Tv2/NMdF0PKNteZ0dUgHwJdFLytTyP9okMrHuvJr9+/n/klZaAmc\nzHUoO+xePmFom5B0cLO2pBa0Y6LpLeyFdZjWMJWH5d2QjCN8MABtDj6MF5NSgL/p\ny7MSb6e8VmtyxyQTv0Nds2dD7QKBgQD2Bf+CS1rGx/4t1g2abf3I+ylZvCVdxquy\nYoEbOsM8yPEORrvHAPcplgH8xEcNFV/2j0DGOhtpTcZrB5rcWU5QNK4V8Gcw+4QX\nVGsAoun8Av8PTdr7rl7eLtawHSXNtEVOpPhGHphheIY9sNRTi0KgCuKvt6W4F9iR\nV9+vetkb3QKBgHKjwUm0fQz//9dzbSAd45AN5zs50A1jVsWQHycJVwigTxNmq/BL\nEsGK0jl+PiehxQUwYMn2ijWX30dzkd/2Hdp/xTjvEhRq1T3WYqIU4h6udOYdygUT\nK68j2FqR60PgYR5E7C2UBwrAcAwoarZNCaNj6Pyh2CfSZ7ZtPzjItu0RAoGAa0rA\nXG1KgGhVtF2mfxO62vyV0vmXficXV+tXjK162bZ0UhqM58PHBo7R/Q8IQW9x81AU\nGp7at3jgsGqXocMcwSPIS+8Uwaret2HsbFGgI3SXEXCNsLchzlm07Qc5JlWY6CxP\nzhynrdJnEN5eKrUP8EXvCFzZ28gifXhKJ/g2WM0CgYA9IkVYMhDmRWyib1NFbSD0\nqCIMEjwYsthUfpXu1CBSAPT8DSmqTBCc+dunD2rtXSAM8KDrxfdHYyHN9qRwVtPv\nMt0uuwV4XaQFR490T+ax4Zu4uPxXXUaWiSd3U4AAB7bgo/BsNdMv0ESokLBDZgsA\nJaqRvN/arJS2YB5PTyljDA==\n-----END PRIVATE KEY-----\n`,
+  token_uri:'https://oauth2.googleapis.com/token',
+};
+const VERTEX_BASE=`https://us-central1-aiplatform.googleapis.com/v1/projects/${VERTEX_SA.project_id}/locations/us-central1/publishers/google/models`;
+const MODEL='gemini-2.5-flash';
+
+let _saToken=null,_saExp=0;
+async function getSAToken(){
+  if(_saToken&&Date.now()<_saExp) return _saToken;
+  const now=Math.floor(Date.now()/1000);
+  const b64u=o=>btoa(JSON.stringify(o)).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+  const unsigned=`${b64u({alg:'RS256',typ:'JWT'})}.${b64u({iss:VERTEX_SA.client_email,scope:'https://www.googleapis.com/auth/cloud-platform',aud:VERTEX_SA.token_uri,exp:now+3600,iat:now})}`;
+  const pem=VERTEX_SA.private_key.replace(/-----BEGIN PRIVATE KEY-----|-----END PRIVATE KEY-----|\n/g,'');
+  const der=Uint8Array.from(atob(pem),c=>c.charCodeAt(0));
+  const key=await crypto.subtle.importKey('pkcs8',der.buffer,{name:'RSASSA-PKCS1-v1_5',hash:'SHA-256'},false,['sign']);
+  const sig=await crypto.subtle.sign('RSASSA-PKCS1-v1_5',key,new TextEncoder().encode(unsigned));
+  const jwt=`${unsigned}.${btoa(String.fromCharCode(...new Uint8Array(sig))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'')}`;
+  const r=await fetch(VERTEX_SA.token_uri,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:`grant_type=urn:ietf:params:oauth:grant-type:jwt-bearer&assertion=${jwt}`});
+  const d=await r.json();
+  if(!d.access_token) throw new Error('Token SA falló');
+  _saToken=d.access_token;_saExp=Date.now()+55*60*1000;
+  return _saToken;
+}
+async function vertexGenerate(system,contents,maxT=350,temp=0.75){
+  const token=await getSAToken();
+  const body={contents,generationConfig:{maxOutputTokens:maxT,temperature:temp}};
+  if(system) body.system_instruction={parts:[{text:system}]};
+  const r=await fetch(`${VERTEX_BASE}/${MODEL}:generateContent`,{
+    method:'POST',
+    headers:{'Content-Type':'application/json','Authorization':`Bearer ${token}`},
+    body:JSON.stringify(body)
+  });
+  if(!r.ok){const e=await r.json().catch(()=>({}));throw new Error(e?.error?.message||`HTTP ${r.status}`);}
+  const d=await r.json();
+  const cand=d.candidates?.[0];
+  if(!cand) throw new Error('Sin respuesta');
+  return cand.content.parts.map(p=>p.text||'').join('').trim();
+}
+
+// ═══════════════════════════════════════════════════════
+// INDEXEDDB — persistencia de sesiones, PRs, historial
+// ═══════════════════════════════════════════════════════
+let _db=null;
+async function dbOpen(){
+  return new Promise((res,rej)=>{
+    const req=indexedDB.open('RomaDB',1);
+    req.onupgradeneeded=e=>e.target.result.createObjectStore('kv');
+    req.onsuccess=e=>{_db=e.target.result;res(_db);}
+    req.onerror=()=>rej(req.error);
+  });
+}
+function dbSet(k,v){return new Promise((res,rej)=>{const tx=_db.transaction('kv','readwrite');tx.objectStore('kv').put(v,k);tx.oncomplete=()=>res();tx.onerror=()=>rej();})}
+function dbGet(k){return new Promise((res,rej)=>{const tx=_db.transaction('kv','readonly');const req=tx.objectStore('kv').get(k);req.onsuccess=()=>res(req.result??null);req.onerror=()=>rej();})}
+
+// ═══════════════════════════════════════════════════════
+// STATE — todo el estado de Roma
+// ═══════════════════════════════════════════════════════
+let S={
+  sesionActiva:null,       // sesión en curso
+  historialSesiones:[],    // sesiones completadas
+  prRecords:{},            // { ejercicioId: {peso, reps, fecha} } — mejor peso×reps
+  volRecords:{},           // { ejercicioId: {tonelaje, fecha} }   — mejor tonelaje en una sesión
+  metricas:[],             // [{fecha, peso, cintura, brazo}]
+  romaHist:[],             // memoria de conversación que se manda a la IA (contexto real)
+  coachLog:[],             // hilo visible en pantalla {role,text} — separado del contexto de IA
+};
+
+async function guardar(){ try{ await dbSet('roma_state',S); }catch(e){console.warn('Save error',e);} }
+async function cargar(){
+  try{
+    const d=await dbGet('roma_state');
+    if(d) S={...S,...d};
+  }catch(e){}
+}
+
+// ═══════════════════════════════════════════════════════
+// RUTINAS
+// ═══════════════════════════════════════════════════════
+const DIAS=['domingo','lunes','martes','miercoles','jueves','viernes','sabado'];
+// ═══════════════════════════════════════════════════════
+// IMÁGENES — precargadas, sin API de pago, sin búsqueda en vivo
+// Fuente: free-exercise-db (dominio público, CDN estable de GitHub)
+// Mapeadas por GRUPO MUSCULAR, no por ejercicio exacto: así nunca
+// dependemos de una URL inventada o de una API que cobre por llamada.
+// ═══════════════════════════════════════════════════════
+const IMG_BASE='https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/';
+const MUSCLE_IMG={
+  pecho:        IMG_BASE+'Barbell_Bench_Press_-_Medium_Grip/0.jpg',
+  hombro:       IMG_BASE+'Barbell_Shoulder_Press/0.jpg',
+  espalda:      IMG_BASE+'Bent_Over_Barbell_Row/0.jpg',
+  dorsal:       IMG_BASE+'Bent-Arm_Barbell_Pullover/0.jpg',
+  trapecio:     IMG_BASE+'Barbell_Shrug/0.jpg',
+  biceps:       IMG_BASE+'Barbell_Curl/0.jpg',
+  triceps:      IMG_BASE+'Bench_Dips/0.jpg',
+  cuadricep:    IMG_BASE+'Barbell_Squat/0.jpg',
+  femoral:      IMG_BASE+'Ball_Leg_Curl/0.jpg',
+  gluteo:       IMG_BASE+'Barbell_Hip_Thrust/0.jpg',
+  gemelo:       IMG_BASE+'Barbell_Seated_Calf_Raise/0.jpg',
+  aductor:      IMG_BASE+'Band_Hip_Adductions/0.jpg',
+  core:         IMG_BASE+'Barbell_Ab_Rollout/0.jpg',
+};
+// Normaliza el texto libre de "musculo" (ej. "Hombro lateral", "Pecho superior")
+// al grupo principal que sí tenemos mapeado arriba.
+function muscleKey(musculo){
+  const m=(musculo||'').toLowerCase();
+  if(m.includes('pecho')) return 'pecho';
+  if(m.includes('hombro')||m.includes('deltoides')) return 'hombro';
+  if(m.includes('dorsal')) return 'dorsal';
+  if(m.includes('romboid')||m.includes('espalda')) return 'espalda';
+  if(m.includes('trapec')) return 'trapecio';
+  if(m.includes('bícep')||m.includes('bicep')||m.includes('braquial')) return 'biceps';
+  if(m.includes('trícep')||m.includes('tricep')) return 'triceps';
+  if(m.includes('cuádricep')||m.includes('cuadricep')) return 'cuadricep';
+  if(m.includes('femoral')) return 'femoral';
+  if(m.includes('glúteo')||m.includes('gluteo')) return 'gluteo';
+  if(m.includes('gemelo')||m.includes('sóleo')||m.includes('soleo')) return 'gemelo';
+  if(m.includes('aductor')) return 'aductor';
+  if(m.includes('abductor')) return 'gluteo';
+  if(m.includes('core')) return 'core';
+  return 'pecho'; // fallback razonable, nunca null
+}
+function getExerciseImage(ex){ return MUSCLE_IMG[muscleKey(ex.musculo)]; }
+
+const RUTINA={
+  lunes:{nombre:'Push A · Pecho, Hombro, Trícep',ejercicios:[
+    {id:'push_a_1',nombre:'Press en máquina pecho',equipo:'Máquina',musculo:'Pecho',sets:5,reps:'8-10',descanso:120,img:'https://musclewiki.com/media/uploads/male-machine-chest-press-front.gif'},
+    {id:'push_a_2',nombre:'Press inclinado mancuerna',equipo:'Mancuerna',musculo:'Pecho superior',sets:4,reps:'10-12',descanso:90,img:'https://musclewiki.com/media/uploads/male-dumbbell-incline-bench-press-side.gif'},
+    {id:'push_a_3',nombre:'Aperturas polea cruzada',equipo:'Polea',musculo:'Pecho inner',sets:4,reps:'12-15',descanso:60,img:'https://musclewiki.com/media/uploads/male-cable-fly-front.gif'},
+    {id:'push_a_4',nombre:'Press hombro en máquina',equipo:'Máquina',musculo:'Hombro frontal',sets:5,reps:'10-12',descanso:120,img:'https://musclewiki.com/media/uploads/male-machine-shoulder-press-front.gif'},
+    {id:'push_a_5',nombre:'Elevaciones laterales mancuerna',equipo:'Mancuerna',musculo:'Hombro lateral',sets:5,reps:'12-15',descanso:60,img:'https://musclewiki.com/media/uploads/male-dumbbell-lateral-raise-front.gif'},
+    {id:'push_a_6',nombre:'Elevaciones laterales polea baja',equipo:'Polea',musculo:'Hombro lateral',sets:3,reps:'15-20',descanso:60,img:'https://musclewiki.com/media/uploads/male-cable-lateral-raise-front.gif'},
+    {id:'push_a_7',nombre:'Extensión trícep polea alta',equipo:'Polea',musculo:'Trícep',sets:4,reps:'12-15',descanso:60,img:'https://musclewiki.com/media/uploads/male-cable-tricep-pushdown-side.gif'},
+    {id:'push_a_8',nombre:'Fondos en máquina (dip machine)',equipo:'Máquina',musculo:'Trícep',sets:4,reps:'10-12',descanso:90,img:'https://musclewiki.com/media/uploads/male-machine-tricep-dip-side.gif'},
+    {id:'push_a_9',nombre:'Press francés mancuerna',equipo:'Mancuerna',musculo:'Trícep largo',sets:3,reps:'10-12',descanso:90,img:'https://musclewiki.com/media/uploads/male-dumbbell-lying-tricep-extension-side.gif'},
+    {id:'push_a_10',nombre:'Congestión polea rope pushdown',equipo:'Polea',musculo:'Trícep',sets:3,reps:'20-25',descanso:45,img:'https://musclewiki.com/media/uploads/male-cable-tricep-pushdown-rope-side.gif'},
+  ]},
+  martes:{nombre:'Pull A · Espalda, Bícep',ejercicios:[
+    {id:'pull_a_1',nombre:'Jalón al pecho agarre amplio',equipo:'Máquina',musculo:'Dorsal',sets:5,reps:'10-12',descanso:120,img:'https://musclewiki.com/media/uploads/male-cable-lat-pulldown-front.gif'},
+    {id:'pull_a_2',nombre:'Remo en máquina',equipo:'Máquina',musculo:'Espalda media',sets:5,reps:'10-12',descanso:120,img:'https://musclewiki.com/media/uploads/male-machine-seated-row-side.gif'},
+    {id:'pull_a_3',nombre:'Remo unilateral mancuerna',equipo:'Mancuerna',musculo:'Dorsal/Romboides',sets:4,reps:'10-12',descanso:60,img:'https://musclewiki.com/media/uploads/male-dumbbell-single-arm-row-side.gif'},
+    {id:'pull_a_4',nombre:'Pulldown recto polea',equipo:'Polea',musculo:'Dorsal inferior',sets:3,reps:'12-15',descanso:60,img:'https://musclewiki.com/media/uploads/male-cable-pullover-side.gif'},
+    {id:'pull_a_5',nombre:'Remo máquina convergente',equipo:'Máquina',musculo:'Romboides',sets:4,reps:'10-12',descanso:90,img:'https://musclewiki.com/media/uploads/male-machine-chest-supported-row-side.gif'},
+    {id:'pull_a_6',nombre:'Face pulls polea cuerda',equipo:'Polea',musculo:'Deltoides posterior',sets:3,reps:'15-20',descanso:60,img:'https://musclewiki.com/media/uploads/male-cable-face-pull-front.gif'},
+    {id:'pull_a_7',nombre:'Curl bíceps en polea',equipo:'Polea',musculo:'Bícep',sets:4,reps:'12-15',descanso:60,img:'https://musclewiki.com/media/uploads/male-cable-bicep-curl-front.gif'},
+    {id:'pull_a_8',nombre:'Curl martillo mancuerna',equipo:'Mancuerna',musculo:'Braquial',sets:3,reps:'12-15',descanso:60,img:'https://musclewiki.com/media/uploads/male-dumbbell-hammer-curl-front.gif'},
+    {id:'pull_a_9',nombre:'Curl predicador máquina',equipo:'Máquina',musculo:'Bícep pico',sets:3,reps:'12-15',descanso:60,img:'https://musclewiki.com/media/uploads/male-machine-preacher-curl-side.gif'},
+    {id:'pull_a_10',nombre:'Encogimientos mancuerna',equipo:'Mancuerna',musculo:'Trapecio',sets:3,reps:'15-20',descanso:60,img:'https://musclewiki.com/media/uploads/male-dumbbell-shrug-front.gif'},
+  ]},
+  miercoles:{nombre:'Legs A · Cuádricep',ejercicios:[
+    {id:'legs_a_1',nombre:'Prensa de pierna',equipo:'Máquina',musculo:'Cuádricep/Glúteo',sets:5,reps:'10-12',descanso:120,img:'https://musclewiki.com/media/uploads/male-machine-leg-press-side.gif'},
+    {id:'legs_a_2',nombre:'Hack squat en máquina',equipo:'Máquina',musculo:'Cuádricep',sets:4,reps:'10-12',descanso:120,img:'https://musclewiki.com/media/uploads/male-machine-hack-squat-side.gif'},
+    {id:'legs_a_3',nombre:'Extensión de pierna',equipo:'Máquina',musculo:'Cuádricep',sets:4,reps:'12-15',descanso:60,img:'https://musclewiki.com/media/uploads/male-machine-leg-extension-side.gif'},
+    {id:'legs_a_4',nombre:'Curl femoral tumbado',equipo:'Máquina',musculo:'Femoral',sets:4,reps:'12-15',descanso:90,img:'https://musclewiki.com/media/uploads/male-machine-lying-leg-curl-side.gif'},
+    {id:'legs_a_5',nombre:'Aductores máquina',equipo:'Máquina',musculo:'Aductor',sets:3,reps:'15-20',descanso:60,img:'https://musclewiki.com/media/uploads/male-machine-hip-adduction-side.gif'},
+    {id:'legs_a_6',nombre:'Pantorrillas en prensa',equipo:'Máquina',musculo:'Gemelo',sets:5,reps:'15-20',descanso:60,img:'https://musclewiki.com/media/uploads/male-machine-calf-press-on-leg-press-side.gif'},
+    {id:'legs_a_7',nombre:'Plancha abdominal',equipo:'Suelo',musculo:'Core',sets:3,reps:'45s',descanso:60,img:'https://musclewiki.com/media/uploads/male-plank-side.gif'},
+    {id:'legs_a_8',nombre:'Elevación de piernas colgado',equipo:'Barra',musculo:'Core',sets:3,reps:'12-15',descanso:60,img:'https://musclewiki.com/media/uploads/male-hanging-leg-raise-side.gif'},
+  ]},
+  jueves:{nombre:'Push B · Pecho, Hombro, Trícep',ejercicios:[
+    {id:'push_b_1',nombre:'Press en máquina pecho',equipo:'Máquina',musculo:'Pecho',sets:5,reps:'8-10',descanso:120,img:'https://musclewiki.com/media/uploads/male-machine-chest-press-front.gif'},
+    {id:'push_b_2',nombre:'Press con mancuerna plano',equipo:'Mancuerna',musculo:'Pecho',sets:4,reps:'10-12',descanso:90,img:'https://musclewiki.com/media/uploads/male-dumbbell-bench-press-side.gif'},
+    {id:'push_b_3',nombre:'Press hombro en máquina',equipo:'Máquina',musculo:'Hombro frontal',sets:5,reps:'10-12',descanso:120,img:'https://musclewiki.com/media/uploads/male-machine-shoulder-press-front.gif'},
+    {id:'push_b_4',nombre:'Elevaciones laterales polea baja',equipo:'Polea',musculo:'Hombro lateral',sets:5,reps:'15-20',descanso:60,img:'https://musclewiki.com/media/uploads/male-cable-lateral-raise-front.gif'},
+    {id:'push_b_5',nombre:'Aperturas mancuerna inclinado',equipo:'Mancuerna',musculo:'Pecho superior',sets:4,reps:'12-15',descanso:60,img:'https://musclewiki.com/media/uploads/male-dumbbell-incline-fly-side.gif'},
+    {id:'push_b_6',nombre:'Elevaciones frontales polea',equipo:'Polea',musculo:'Hombro frontal',sets:3,reps:'12-15',descanso:60,img:'https://musclewiki.com/media/uploads/male-cable-front-raise-side.gif'},
+    {id:'push_b_7',nombre:'Trícep sobre cabeza en polea',equipo:'Polea',musculo:'Trícep largo',sets:4,reps:'12-15',descanso:60,img:'https://musclewiki.com/media/uploads/male-cable-overhead-tricep-extension-side.gif'},
+    {id:'push_b_8',nombre:'Press francés mancuerna',equipo:'Mancuerna',musculo:'Trícep',sets:3,reps:'10-12',descanso:90,img:'https://musclewiki.com/media/uploads/male-dumbbell-lying-tricep-extension-side.gif'},
+    {id:'push_b_9',nombre:'Extensión trícep polea alta',equipo:'Polea',musculo:'Trícep',sets:4,reps:'12-15',descanso:60,img:'https://musclewiki.com/media/uploads/male-cable-tricep-pushdown-side.gif'},
+    {id:'push_b_10',nombre:'Cable crunch en polea',equipo:'Polea',musculo:'Core',sets:3,reps:'15-20',descanso:60,img:'https://musclewiki.com/media/uploads/male-cable-crunch-side.gif'},
+  ]},
+  viernes:{nombre:'Pull B · Espalda ancha, Bícep',ejercicios:[
+    {id:'pull_b_1',nombre:'Jalón agarre cerrado neutro',equipo:'Máquina',musculo:'Dorsal',sets:5,reps:'10-12',descanso:120,img:'https://musclewiki.com/media/uploads/male-cable-lat-pulldown-front.gif'},
+    {id:'pull_b_2',nombre:'Remo polea baja agarre ancho',equipo:'Polea',musculo:'Espalda media',sets:5,reps:'10-12',descanso:120,img:'https://musclewiki.com/media/uploads/male-cable-seated-row-front.gif'},
+    {id:'pull_b_3',nombre:'Pulldown recto polea',equipo:'Polea',musculo:'Dorsal inferior',sets:4,reps:'12-15',descanso:60,img:'https://musclewiki.com/media/uploads/male-cable-pullover-side.gif'},
+    {id:'pull_b_4',nombre:'Remo máquina convergente',equipo:'Máquina',musculo:'Romboides',sets:4,reps:'10-12',descanso:90,img:'https://musclewiki.com/media/uploads/male-machine-chest-supported-row-side.gif'},
+    {id:'pull_b_5',nombre:'Face pulls polea cuerda',equipo:'Polea',musculo:'Deltoides posterior',sets:4,reps:'15-20',descanso:60,img:'https://musclewiki.com/media/uploads/male-cable-face-pull-front.gif'},
+    {id:'pull_b_6',nombre:'Curl bíceps mancuerna alterno',equipo:'Mancuerna',musculo:'Bícep',sets:4,reps:'12-15',descanso:60,img:'https://musclewiki.com/media/uploads/male-dumbbell-alternating-curl-front.gif'},
+    {id:'pull_b_7',nombre:'Curl predicador máquina',equipo:'Máquina',musculo:'Bícep pico',sets:4,reps:'12-15',descanso:60,img:'https://musclewiki.com/media/uploads/male-machine-preacher-curl-side.gif'},
+    {id:'pull_b_8',nombre:'Curl concentrado mancuerna',equipo:'Mancuerna',musculo:'Bícep',sets:3,reps:'12-15',descanso:60,img:'https://musclewiki.com/media/uploads/male-dumbbell-concentration-curl-side.gif'},
+    {id:'pull_b_9',nombre:'Curl martillo en polea',equipo:'Polea',musculo:'Braquial',sets:3,reps:'15',descanso:60,img:'https://musclewiki.com/media/uploads/male-cable-hammer-curl-front.gif'},
+    {id:'pull_b_10',nombre:'Plancha lateral',equipo:'Suelo',musculo:'Core oblicuo',sets:3,reps:'40s c/lado',descanso:60,img:'https://musclewiki.com/media/uploads/male-side-plank-side.gif'},
+  ]},
+  sabado:{nombre:'Legs B · Femoral y Glúteo',ejercicios:[
+    {id:'legs_b_1',nombre:'Curl femoral sentado',equipo:'Máquina',musculo:'Femoral',sets:5,reps:'12-15',descanso:90,img:'https://musclewiki.com/media/uploads/male-machine-seated-leg-curl-side.gif'},
+    {id:'legs_b_2',nombre:'Curl femoral tumbado',equipo:'Máquina',musculo:'Femoral',sets:4,reps:'12-15',descanso:90,img:'https://musclewiki.com/media/uploads/male-machine-lying-leg-curl-side.gif'},
+    {id:'legs_b_3',nombre:'Hip thrust en máquina',equipo:'Máquina',musculo:'Glúteo',sets:5,reps:'10-12',descanso:120,img:'https://musclewiki.com/media/uploads/male-barbell-hip-thrust-side.gif'},
+    {id:'legs_b_4',nombre:'Prensa pie alto (femoral)',equipo:'Máquina',musculo:'Femoral/Glúteo',sets:4,reps:'10-12',descanso:120,img:'https://musclewiki.com/media/uploads/male-machine-leg-press-side.gif'},
+    {id:'legs_b_5',nombre:'Glúteo kickback en polea',equipo:'Polea',musculo:'Glúteo',sets:4,reps:'15 c/lado',descanso:60,img:'https://musclewiki.com/media/uploads/male-cable-glute-kickback-side.gif'},
+    {id:'legs_b_6',nombre:'Abductores de pie polea',equipo:'Polea',musculo:'Glúteo lateral',sets:3,reps:'15 c/lado',descanso:60,img:'https://musclewiki.com/media/uploads/male-cable-hip-abduction-side.gif'},
+    {id:'legs_b_7',nombre:'Abductores máquina',equipo:'Máquina',musculo:'Glúteo',sets:3,reps:'20',descanso:60,img:'https://musclewiki.com/media/uploads/male-machine-hip-abduction-side.gif'},
+    {id:'legs_b_8',nombre:'Pantorrillas sentado en máquina',equipo:'Máquina',musculo:'Sóleo',sets:5,reps:'15-20',descanso:60,img:'https://musclewiki.com/media/uploads/male-machine-seated-calf-raise-side.gif'},
+    {id:'legs_b_9',nombre:'Elevación de piernas colgado',equipo:'Barra',musculo:'Core',sets:3,reps:'12-15',descanso:60,img:'https://musclewiki.com/media/uploads/male-hanging-leg-raise-side.gif'},
+    {id:'legs_b_10',nombre:'Cable crunch en polea',equipo:'Polea',musculo:'Core',sets:3,reps:'15-20',descanso:60,img:'https://musclewiki.com/media/uploads/male-cable-crunch-side.gif'},
+  ]},
+};
+function getRutina(){ return RUTINA[DIAS[new Date().getDay()]]||null; }
+
+// ═══════════════════════════════════════════════════════
+// TIPS — manual de técnica, escrito una vez, consultado gratis
+// (cero llamadas a IA; esto es lo que pediste como "base de datos
+// que Roma consulta", no contexto que se manda en cada request)
+// ═══════════════════════════════════════════════════════
+const TIPS={
+  push_a_1:'Pega la espalda al respaldo y exhala al empujar. No dejes que los hombros se adelanten al pecho.',
+  push_a_2:'Codos a 45°, no a 90° — así proteges el hombro y el pecho hace el trabajo.',
+  push_a_3:'Codos semi-flexionados fijos todo el movimiento. Junta las manos al frente, no las cruces.',
+  push_a_4:'No bloquees los codos de golpe arriba. Controla la bajada, ahí se construye el hombro.',
+  push_a_5:'Sube hasta la altura del hombro, no más. Lidera con el codo, no con la muñeca.',
+  push_a_6:'La polea da tensión constante incluso abajo — no dejes caer el peso entre repeticiones.',
+  push_a_7:'Codos pegados al torso todo el set. Si se abren, el trícep deja de trabajar solo.',
+  push_a_8:'Inclínate ligeramente al frente para más pecho, o mantente vertical para aislar tríceps.',
+  push_a_9:'Solo el antebrazo se mueve. Si el codo se mueve, ya no es press francés.',
+  push_a_10:'Separa las cuerdas al final del movimiento — ahí está la contracción máxima del trícep.',
+  pull_a_1:'Lleva los codos hacia abajo y atrás, no solo hacia abajo. Pecho arriba todo el movimiento.',
+  pull_a_2:'Junta los omóplatos antes de flexionar el codo — la espalda inicia el jalón, no el brazo.',
+  pull_a_3:'Mantén la espalda plana, no rotada. El codo va hacia la cadera, no hacia atrás.',
+  pull_a_4:'Brazos casi rectos todo el movimiento — esto es dorsal inferior, no bíceps.',
+  pull_a_5:'Aprieta los omóplatos un segundo arriba antes de soltar.',
+  pull_a_6:'Jala hacia tu frente, codos altos. Esto es para el hombro posterior, ve ligero.',
+  pull_a_7:'Codos fijos pegados al cuerpo. Sube controlado, baja todavía más lento.',
+  pull_a_8:'Agarre neutro todo el movimiento — esto trabaja braquial, no solo bíceps.',
+  pull_a_9:'No bloquees el codo arriba. El estiramiento abajo es lo que más construye aquí.',
+  pull_a_10:'Sube los hombros hacia las orejas, no los rotes. Pausa arriba un segundo.',
+  legs_a_1:'Pies a la altura de los hombros para cuádricep general. No bloquees rodillas arriba.',
+  legs_a_2:'Espalda pegada al respaldo todo el recorrido. Bajada controlada, no en caída libre.',
+  legs_a_3:'Pausa un segundo arriba apretando el cuádricep antes de bajar.',
+  legs_a_4:'Cadera pegada al banco — si se levanta, estás usando glúteo en vez de femoral.',
+  legs_a_5:'Movimiento controlado, sin rebotar al final del recorrido.',
+  legs_a_6:'Rango completo: estira abajo, sube hasta la punta de los dedos.',
+  legs_a_7:'Cadera neutra, no la subas ni la dejes caer. Respira, no aguantes el aire.',
+  legs_a_8:'Curva la pelvis hacia arriba al final, no solo levantes las piernas rectas.',
+  push_b_1:'Pega la espalda al respaldo y exhala al empujar. No dejes que los hombros se adelanten al pecho.',
+  push_b_2:'Deja que las mancuernas bajen un poco más allá del pecho — más rango que con barra.',
+  push_b_3:'No bloquees los codos de golpe arriba. Controla la bajada, ahí se construye el hombro.',
+  push_b_4:'La polea da tensión constante incluso abajo — no dejes caer el peso entre repeticiones.',
+  push_b_5:'Imagina abrazar un árbol. El movimiento es de hombro, no de codo.',
+  push_b_6:'Sube solo hasta la altura del hombro y controla la bajada — ahí pasa lo importante.',
+  push_b_7:'Mantén los codos cerca de las orejas. Si se separan, pierdes tensión en la cabeza larga.',
+  push_b_8:'Solo el antebrazo se mueve. Si el codo se mueve, ya no es press francés.',
+  push_b_9:'Codos pegados al torso todo el set. Si se abren, el trícep deja de trabajar solo.',
+  push_b_10:'Flexiona desde las costillas hacia la pelvis, no jales con los brazos.',
+  pull_b_1:'Lleva los codos hacia abajo y atrás, no solo hacia abajo. Pecho arriba todo el movimiento.',
+  pull_b_2:'Pecho al frente, jala con los codos hacia atrás y un poco hacia afuera.',
+  pull_b_3:'Brazos casi rectos todo el movimiento — esto es dorsal inferior, no bíceps.',
+  pull_b_4:'Aprieta los omóplatos un segundo arriba antes de soltar.',
+  pull_b_5:'Jala hacia tu frente, codos altos. Esto es para el hombro posterior, ve ligero.',
+  pull_b_6:'Rota la muñeca al subir para máxima contracción del bíceps.',
+  pull_b_7:'No bloquees el codo arriba. El estiramiento abajo es lo que más construye aquí.',
+  pull_b_8:'Codo apoyado en el muslo, aísla completamente — nada de impulso con el cuerpo.',
+  pull_b_9:'Agarre neutro, codo fijo. La tensión constante de la polea es la ventaja aquí.',
+  pull_b_10:'Cadera alineada con hombros y tobillos — no la dejes caer.',
+  legs_b_1:'Punta de los pies hacia ti durante todo el movimiento — más activación de femoral.',
+  legs_b_2:'Cadera pegada al banco — si se levanta, estás usando glúteo en vez de femoral.',
+  legs_b_3:'Empuja con los talones, aprieta el glúteo arriba un segundo completo.',
+  legs_b_4:'Pies a la altura de los hombros para cuádricep general. No bloquees rodillas arriba.',
+  legs_b_5:'No arquees la espalda baja para ganar rango — el movimiento es solo de cadera.',
+  legs_b_6:'Torso quieto, la pierna se mueve sola hacia el lado.',
+  legs_b_7:'Empuja con la parte externa de la rodilla, no con el tobillo.',
+  legs_b_8:'Aquí trabaja más el sóleo — sube lento y pausa arriba.',
+  legs_b_9:'Curva la pelvis hacia arriba al final, no solo levantes las piernas rectas.',
+  legs_b_10:'Flexiona desde las costillas hacia la pelvis, no jales con los brazos.',
+};
+
+// ═══════════════════════════════════════════════════════
+// PROGRESIÓN REAL — tonelaje, tendencias, objetivo del próximo set
+// Todo esto es cálculo local sobre datos que ya guarda la app.
+// Cero llamadas a IA, cero costo, corre instantáneo.
+// ═══════════════════════════════════════════════════════
+function tonelajeDeSets(sets){ return sets.reduce((sum,s)=>sum+((s.peso||0)*(s.reps||0)),0); }
+
+function todasLasSesiones(){
+  // historial cerrado + la sesión activa (si existe) cuenta como "hoy"
+  return S.sesionActiva ? [...S.historialSesiones,S.sesionActiva] : S.historialSesiones;
+}
+
+function tonelajeSemanal(){
+  const ahora=Date.now(), semana=7*24*60*60*1000;
+  let actual=0,anterior=0;
+  todasLasSesiones().forEach(s=>{
+    const f=new Date(s.fecha).getTime();
+    const ton=tonelajeDeSets(s.sets);
+    if(ahora-f<=semana) actual+=ton;
+    else if(ahora-f<=semana*2) anterior+=ton;
+  });
+  return {actual:Math.round(actual),anterior:Math.round(anterior)};
+}
+
+// Serie histórica de un ejercicio: una entrada por sesión donde se entrenó
+function serieEjercicio(exId){
+  return todasLasSesiones().map(s=>{
+    const sets=s.sets.filter(x=>x.id===exId&&x.peso&&x.reps);
+    if(!sets.length) return null;
+    const mejor=sets.reduce((a,b)=>(a.peso*a.reps>=b.peso*b.reps?a:b));
+    return {fecha:s.fechaFin||s.fecha,peso:mejor.peso,reps:mejor.reps,ton:tonelajeDeSets(sets)};
+  }).filter(Boolean);
+}
+
+// Actualiza el récord de tonelaje (no solo peso×reps de un set) al cerrar sesión
+function actualizarVolRecords(ses){
+  const porEj={};
+  ses.sets.forEach(s=>{ if(!s.peso||!s.reps) return; (porEj[s.id]=porEj[s.id]||[]).push(s); });
+  Object.entries(porEj).forEach(([id,sets])=>{
+    const ton=tonelajeDeSets(sets);
+    const rec=S.volRecords[id];
+    if(!rec||ton>rec.tonelaje) S.volRecords[id]={tonelaje:Math.round(ton),fecha:new Date().toISOString()};
+  });
+}
+
+// Detecta estancamiento, progreso real o caída de rendimiento — un solo aviso, el más relevante
+function notarObservacion(ex){
+  const serie=serieEjercicio(ex.id);
+  if(serie.length<3) return null;
+
+  // 1) Estancamiento: cuántas sesiones lleva sin superar su mejor peso
+  const pesos=serie.map(s=>s.peso);
+  const max=Math.max(...pesos);
+  const idxMax=pesos.lastIndexOf(max);
+  const sesionesSinSuperar=serie.length-1-idxMax;
+  if(sesionesSinSuperar>=3){
+    return `📊 Llevas ${sesionesSinSuperar} sesiones sin superar ${max}kg en **${ex.nombre}**. Vale la pena ajustar reps, técnica o un deload corto.`;
+  }
+
+  // 2) Caída de rendimiento: última sesión bastante por debajo de la anterior
+  const ult=serie[serie.length-1], prev=serie[serie.length-2];
+  if(prev&&prev.ton>0&&ult.ton<prev.ton*0.85){
+    return `🔻 Bajaste rendimiento en **${ex.nombre}** respecto a tu sesión anterior. ¿Dormiste bien o cambió algo?`;
+  }
+
+  // 3) Progreso real: tonelaje subiendo de forma sostenida en las últimas sesiones
+  const ref=serie[Math.max(0,serie.length-6)];
+  if(ref&&ref.ton>0){
+    const pct=Math.round(((ult.ton-ref.ton)/ref.ton)*100);
+    if(pct>=12) return `📈 Subiste ${pct}% de tonelaje en **${ex.nombre}** en tus últimas sesiones. Eso es progreso real, no casualidad.`;
+  }
+  return null;
+}
+
+// Sobrecarga: ¿esta semana hubo muchos más fallos que la anterior?
+function detectarSobrecarga(){
+  const ahora=Date.now(), semana=7*24*60*60*1000;
+  let fallosActual=0,fallosAnterior=0;
+  todasLasSesiones().forEach(s=>{
+    const f=new Date(s.fecha).getTime();
+    const n=s.sets.filter(x=>x.fallo).length;
+    if(ahora-f<=semana) fallosActual+=n;
+    else if(ahora-f<=semana*2) fallosAnterior+=n;
+  });
+  if(fallosAnterior>=2&&fallosActual>=fallosAnterior*1.8){
+    return `⚠️ Reportaste muchos más fallos esta semana (${fallosActual}) que la anterior (${fallosAnterior}). Vigila el descanso — la fuerza se construye también fuera del gym.`;
+  }
+  return null;
+}
+
+// El cambio central: el objetivo se muestra ANTES del set, no después.
+function sugerirObjetivo(ex,ses){
+  const rr=ex.reps.toString().split('-');
+  const rMin=parseInt(rr[0]), rMax=parseInt(rr[rr.length-1]);
+  const setsHoy=ses.sets.filter(s=>s.id===ex.id);
+  const numSet=setsHoy.length+1;
+
+  if(setsHoy.length===0){
+    const pr=S.prRecords[ex.id];
+    if(!pr) return `🎯 Set 1: elige un peso con el que llegues justo a ${rMax} reps con buena técnica.`;
+    if(pr.reps>=rMax) return `🎯 Set 1: prueba ${(pr.peso+2.5)}kg × ${rMin} — subiste de peso la vez pasada, ahora toca menos reps al inicio.`;
+    return `🎯 Set 1: ${pr.peso}kg × ${pr.reps+1} — un rep más que tu última vez (${pr.peso}kg×${pr.reps}).`;
+  }
+  const last=setsHoy[setsHoy.length-1];
+  if(!last.peso||!last.reps) return `🎯 Set ${numSet}: mismo peso que el anterior, prioriza técnica.`;
+  return `🎯 Set ${numSet}: ${last.peso}kg × ${Math.min(last.reps,rMax)}+ — igual o más reps que el set anterior.`;
+}
+
+// ═══════════════════════════════════════════════════════
+// UI — navegación entre pantallas
+// ═══════════════════════════════════════════════════════
+function showScreen(id){
+  ['inicio','sesion','hist'].forEach(s=>{
+    const el=document.getElementById('screen-'+s);
+    el.style.display='none';
+  });
+  const target=document.getElementById('screen-'+id);
+  target.style.display='flex';
+  target.style.flexDirection='column';
+  if(id==='hist') renderHist();
+}
+
+function toast(msg,dur=2200){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),dur);
+}
+
+// ═══════════════════════════════════════════════════════
+// PANTALLA INICIO — render
+// ═══════════════════════════════════════════════════════
+function renderInicio(){
+  const el=document.getElementById('inicio-content');
+  const rutina=getRutina();
+
+  if(!rutina){
+    el.innerHTML=`
+      <div class="inicio-rutina-card">
+        <div class="inicio-dia">${DIAS[new Date().getDay()].toUpperCase()}</div>
+        <div class="inicio-nombre">Día de descanso 💤</div>
+        <div class="inicio-meta" style="margin-top:8px">Aprovecha para revisar tu progreso o registrar métricas.</div>
+      </div>`;
+    return;
+  }
+
+  // Si hay sesión activa del mismo día — botón de retomar
+  const mismodia=S.sesionActiva&&S.sesionActiva.dia===DIAS[new Date().getDay()]&&!S.sesionActiva.completada;
+
+  const exList=rutina.ejercicios.slice(0,5).map((ex,i)=>{
+    const pr=S.prRecords[ex.id];
+    return `<div class="inicio-ex-row">
+      <span class="inicio-ex-num">${String(i+1).padStart(2,'0')}</span>
+      <span class="inicio-ex-name">${ex.nombre}</span>
+      <span class="inicio-ex-detail">${ex.sets}×${ex.reps}</span>
+    </div>`;
+  }).join('')+(rutina.ejercicios.length>5?`<div style="font-size:8px;color:var(--r5);text-align:center;padding:6px">+${rutina.ejercicios.length-5} más</div>`:'');
+
+  // Tonelaje semanal — progreso real visible antes de empezar, no solo al terminar
+  const {actual,anterior}=tonelajeSemanal();
+  const tonCard=actual>0?`
+    <div class="inicio-rutina-card" style="padding:14px 16px">
+      <div class="inicio-meta" style="margin-bottom:4px">TONELAJE ESTA SEMANA</div>
+      <div style="font-size:22px;font-weight:700;color:var(--r9)">${actual.toLocaleString()}<span style="font-size:11px;color:var(--r5)"> kg</span></div>
+      ${anterior>0?`<div style="font-size:9.5px;color:${actual>=anterior?'var(--red-dim)':'var(--r5)'}">${actual>=anterior?'▲':'▼'} ${Math.abs(Math.round(((actual-anterior)/anterior)*100))}% vs semana pasada</div>`:''}
+    </div>`:'';
+
+  el.innerHTML=`
+    ${tonCard}
+    <div class="inicio-rutina-card">
+      <div class="inicio-dia">${DIAS[new Date().getDay()].toUpperCase()}</div>
+      <div class="inicio-nombre">${rutina.nombre}</div>
+      <div class="inicio-meta">${rutina.ejercicios.length} ejercicios · PPL x2</div>
+      <div class="inicio-ex-preview">${exList}</div>
+      ${mismodia
+        ?`<button class="btn-start" onclick="retomarSesion()">↩ RETOMAR SESIÓN</button>`
+        :`<button class="btn-start" onclick="iniciarSesion()">INICIAR SESIÓN →</button>`
+      }
+    </div>
+    ${S.historialSesiones.length
+      ?`<div style="font-size:8px;color:var(--r5);letter-spacing:.14em;text-align:center">${S.historialSesiones.length} sesiones registradas — <span style="color:var(--r6);cursor:pointer;text-decoration:underline" onclick="showScreen('hist')">ver historial</span></div>`
+      :''
+    }`;
+}
+
+// ═══════════════════════════════════════════════════════
+// SESIÓN — arrancar
+// ═══════════════════════════════════════════════════════
+function iniciarSesion(){
+  const rutina=getRutina();
+  if(!rutina) return;
+  S.sesionActiva={
+    dia:DIAS[new Date().getDay()],
+    rutina:rutina.nombre,
+    fecha:new Date().toISOString(),
+    ejercicioIdx:0,
+    setActual:1,
+    sets:[],
+    completada:false,
+  };
+  guardar();
+  document.getElementById('session-badge').classList.add('show');
+  showScreen('sesion');
+  renderEjercicio();
+
+  // Saludo inicial del coach
+  const ex=rutina.ejercicios[0];
+  const pr=S.prRecords[ex.id];
+  const msg=pr
+    ?`Empezamos con ${ex.nombre}. Última vez: ${pr.peso}kg × ${pr.reps} reps. Ejecuta limpio.`
+    :`Empezamos con ${ex.nombre}. Primera vez — elige un peso con el que puedas controlar todas las reps. Ejecuta limpio.`;
+  setCoach(msg);
+  const obs=notarObservacion(ex);
+  if(obs) setCoach(obs);
+}
+
+function retomarSesion(){
+  document.getElementById('session-badge').classList.add('show');
+  showScreen('sesion');
+  renderEjercicio();
+  setCoach('Retomando donde quedaste. ¿Listo?');
+}
+
+// ═══════════════════════════════════════════════════════
+// RENDER EJERCICIO — actualiza el panel fijo
+// ═══════════════════════════════════════════════════════
+function renderEjercicio(){
+  const ses=S.sesionActiva;
+  if(!ses) return;
+  const rutina=RUTINA[ses.dia];
+  if(!rutina) return;
+  const ex=rutina.ejercicios[ses.ejercicioIdx];
+  if(!ex) return;
+
+  // Header
+  document.getElementById('hdr-sub').textContent=`${ses.rutina} · EJ ${ses.ejercicioIdx+1}/${rutina.ejercicios.length}`;
+
+  // Card ejercicio
+  const card=document.getElementById('ex-card');
+  card.style.display='block';
+
+  // Imagen — fuente estable precargada, sin API de pago
+  const gifWrap=document.getElementById('ex-gif-wrap');
+  const url=getExerciseImage(ex);
+  gifWrap.innerHTML=`<img class="ex-gif" src="${url}" alt="${ex.nombre}" loading="lazy"
+    onerror="this.parentElement.innerHTML='<div class=ex-gif-placeholder>💪</div>'">`;
+
+  // Info
+  document.getElementById('ex-eyebrow').textContent=`EJ ${ses.ejercicioIdx+1}/${rutina.ejercicios.length} · ${ex.musculo.toUpperCase()}`;
+  document.getElementById('ex-name').textContent=ex.nombre;
+  document.getElementById('ex-meta').textContent=`${ex.equipo} · ${ex.sets} series × ${ex.reps} reps · ${ex.descanso}s descanso`;
+  document.getElementById('ex-tip').textContent=TIPS[ex.id]?'💡 '+TIPS[ex.id]:'';
+  document.getElementById('ex-target').textContent=sugerirObjetivo(ex,ses);
+
+  // Dots
+  const dots=document.getElementById('ex-dots');
+  dots.innerHTML='';
+  for(let i=1;i<=ex.sets;i++){
+    const d=document.createElement('div');
+    d.className='ex-dot'+(i<ses.setActual?' done':i===ses.setActual?' now':'');
+    dots.appendChild(d);
+  }
+
+  // Chips
+  const pr=S.prRecords[ex.id];
+  const volPr=S.volRecords[ex.id];
+  document.getElementById('ex-chips').innerHTML=
+    `<span class="chip">Set ${ses.setActual}/${ex.sets}</span>`
+    +(pr?`<span class="chip red">PR ${pr.peso}kg×${pr.reps}</span>`:'')
+    +(volPr?`<span class="chip">Vol. PR ${volPr.tonelaje}kg</span>`:'');
+
+  // Historial de sets del ejercicio actual en esta sesión
+  const setsDeEste=ses.sets.filter(s=>s.id===ex.id);
+  const histWrap=document.getElementById('sets-hist-wrap');
+  const histEl=document.getElementById('sets-hist');
+  if(setsDeEste.length){
+    histWrap.style.display='block';
+    histEl.innerHTML=setsDeEste.map(s=>
+      `<span class="hist-chip">${s.peso?s.peso+'kg':''} ${s.reps?'× '+s.reps:''}</span>`
+    ).join('');
+  } else {
+    histWrap.style.display='none';
+  }
+
+  // Mostrar botones, ocultar timer
+  document.getElementById('set-btns').classList.add('show');
+  document.getElementById('timer-card').classList.remove('show');
+
+  document.getElementById('sesion-body').scrollTop=0;
+}
+
+// ═══════════════════════════════════════════════════════
+// COACH — hilo real con scroll, burbujas de Roma y del usuario
+// ═══════════════════════════════════════════════════════
+function _fmtMsg(txt){
+  return txt.replace(/\*\*(.*?)\*\*/g,'<strong style="color:var(--r9)">$1</strong>').replace(/\n/g,'<br>');
+}
+function renderCoachThread(){
+  const wrap=document.getElementById('coach-thread');
+  const tag='<span class="coach-tag">ROMA</span>';
+  wrap.innerHTML=tag+S.coachLog.slice(-30).map(m=>
+    `<div class="coach-msg ${m.role}">${_fmtMsg(m.text)}</div>`
+  ).join('');
+  wrap.scrollTop=wrap.scrollHeight;
+}
+function addCoachMsg(txt){
+  hideTyping();
+  S.coachLog.push({role:'roma',text:txt,ts:Date.now()});
+  if(S.coachLog.length>60) S.coachLog=S.coachLog.slice(-60);
+  renderCoachThread();
+  guardar();
+}
+function addUserMsg(txt){
+  S.coachLog.push({role:'user',text:txt,ts:Date.now()});
+  if(S.coachLog.length>60) S.coachLog=S.coachLog.slice(-60);
+  renderCoachThread();
+}
+function showTyping(){
+  const t=document.getElementById('coach-typing');
+  t.style.display='block';
+  const wrap=document.getElementById('coach-thread');
+  wrap.scrollTop=wrap.scrollHeight;
+}
+function hideTyping(){ document.getElementById('coach-typing').style.display='none'; }
+// Mantiene compatibilidad con el resto del código: setCoach() ahora agrega
+// un mensaje nuevo al hilo en vez de reemplazar la única burbuja que había.
+function setCoach(txt){ addCoachMsg(txt); }
+
+// ═══════════════════════════════════════════════════════
+// LOG SET — el corazón del flujo
+// ═══════════════════════════════════════════════════════
+let _esperandoPeso=false;
+let _lastTipo='ok';
+let _timerInterval=null;
+
+function logSet(tipo){
+  const ses=S.sesionActiva;
+  if(!ses) return;
+  const rutina=RUTINA[ses.dia];
+  const ex=rutina.ejercicios[ses.ejercicioIdx];
+
+  _lastTipo=tipo;
+  _esperandoPeso=true;
+
+  // Ocultar botones mientras descansa
+  document.getElementById('set-btns').classList.remove('show');
+
+  // Arrancar timer INMEDIATAMENTE
+  iniciarTimer(ex.descanso);
+
+  // Mensaje según tipo
+  const msgs={
+    ok:'Timer corriendo. Escribe el peso y reps (ej: 80kg 9 reps).',
+    up:'Subiste peso. Timer corriendo. ¿A cuánto y cuántas reps?',
+    dn:'Bajaste peso. Timer corriendo. ¿A cuánto y cuántas reps?'
+  };
+  setCoach(msgs[tipo]);
+
+  // Placeholder del input
+  document.getElementById('inp').placeholder='ej: 80kg 9 reps';
+  document.getElementById('inp').focus();
+}
+
+// ═══════════════════════════════════════════════════════
+// TIMER
+// ═══════════════════════════════════════════════════════
+function iniciarTimer(segs){
+  detenerTimer();
+  const card=document.getElementById('timer-card');
+  const numEl=document.getElementById('timer-num');
+  const ofEl=document.getElementById('timer-of');
+  const fillEl=document.getElementById('timer-fill');
+
+  card.classList.add('show');
+  let rest=segs;
+  const total=segs;
+  const fmt=s=>`${Math.floor(s/60)}:${(s%60).toString().padStart(2,'0')}`;
+  numEl.textContent=fmt(rest);
+  ofEl.textContent=`DE ${fmt(total)}`;
+  fillEl.style.width='100%';
+
+  _timerInterval=setInterval(()=>{
+    rest--;
+    numEl.textContent=fmt(Math.max(0,rest));
+    fillEl.style.width=`${Math.max(0,(rest/total)*100)}%`;
+    if(rest<=0){
+      detenerTimer();
+      card.classList.remove('show');
+      if(!_esperandoPeso){
+        avanzarSet();
+      } else {
+        setCoach('⏱ Descanso terminado. Reporta tu set cuando puedas.');
+      }
+    }
+  },1000);
+}
+
+function detenerTimer(){
+  if(_timerInterval){clearInterval(_timerInterval);_timerInterval=null;}
+}
+
+// ═══════════════════════════════════════════════════════
+// PROCESAR REPORTE DE SET
+// ═══════════════════════════════════════════════════════
+function procesarReporte(txt){
+  const ses=S.sesionActiva;
+  if(!ses) return false;
+  const rutina=RUTINA[ses.dia];
+  const ex=rutina.ejercicios[ses.ejercicioIdx];
+
+  const mPeso=txt.match(/(\d+(?:[.,]\d+)?)\s*(?:kg|kilo)/i);
+  const mReps=txt.match(/(\d+)\s*(?:reps?|rep|repeticiones?)/i)
+    ||txt.match(/[×x]\s*(\d+)/i)
+    ||txt.match(/hice\s+(\d+)/i)
+    ||(!mPeso&&/^\d+$/.test(txt.trim())&&txt.match(/(\d+)/));
+
+  if(!mPeso&&!mReps) return false;
+
+  const peso=mPeso?parseFloat(mPeso[1].replace(',','.')):null;
+  const reps=mReps?parseInt(mReps[1]):null;
+  const fallo=/(fallo|fall[eé]|no pude|l[ií]mite)/i.test(txt);
+
+  // Guardar set
+  ses.sets.push({id:ex.id,set:ses.setActual,peso,reps,fallo,tipo:_lastTipo,f:new Date().toISOString()});
+
+  // PR
+  if(peso&&reps){
+    const pr=S.prRecords[ex.id];
+    if(!pr||peso*reps>pr.peso*pr.reps)
+      S.prRecords[ex.id]={peso,reps,fecha:new Date().toISOString()};
+  }
+
+  // Feedback inmediato (sin esperar IA)
+  const rr=ex.reps.toString().split('-');
+  const rMin=parseInt(rr[0]),rMax=parseInt(rr[rr.length-1]);
+  let fb='';
+  const esPR=peso&&reps&&S.prRecords[ex.id]?.peso===peso&&S.prRecords[ex.id]?.reps===reps;
+  if(esPR) fb='**Nuevo PR.** ';
+  if(fallo&&reps&&reps<rMin-2) fb+='Llegaste al fallo pronto — baja 2-5kg en el siguiente. ';
+  else if(reps&&reps>rMax+2) fb+='Estuvo ligero — sube 2-5kg en el siguiente. ';
+  else fb+='Bien ejecutado. ';
+  if(peso&&reps) fb+=`${peso}kg × ${reps} reps registrados.`;
+
+  _esperandoPeso=false;
+  document.getElementById('inp').placeholder='Escribe peso y reps, o pregunta algo…';
+  setCoach(fb);
+
+  // Guardar historial de conversación para Roma (cerebro)
+  S.romaHist.push({r:'user',t:txt});
+  S.romaHist.push({r:'roma',t:fb});
+  if(S.romaHist.length>40) S.romaHist=S.romaHist.slice(-40);
+
+  guardar();
+
+  // Si timer ya terminó, avanzar
+  if(!_timerInterval) setTimeout(()=>avanzarSet(),1500);
+
+  // Actualizar historial visible de sets
+  renderSetsHist(ex);
+
+  return true;
+}
+
+function renderSetsHist(ex){
+  const ses=S.sesionActiva;
+  if(!ses) return;
+  const setsDeEste=ses.sets.filter(s=>s.id===ex.id);
+  const histWrap=document.getElementById('sets-hist-wrap');
+  const histEl=document.getElementById('sets-hist');
+  if(setsDeEste.length){
+    histWrap.style.display='block';
+    histEl.innerHTML=setsDeEste.map(s=>
+      `<span class="hist-chip">${s.peso?s.peso+'kg':''} ${s.reps?'× '+s.reps:''}</span>`
+    ).join('');
+  }
+  // Scroll para ver chips
+  document.getElementById('sesion-body').scrollTop=999;
+  setTimeout(()=>document.getElementById('sesion-body').scrollTop=0,800);
+}
+
+// ═══════════════════════════════════════════════════════
+// AVANZAR SET / EJERCICIO
+// ═══════════════════════════════════════════════════════
+function avanzarSet(){
+  const ses=S.sesionActiva;
+  if(!ses) return;
+  const rutina=RUTINA[ses.dia];
+  const ex=rutina.ejercicios[ses.ejercicioIdx];
+
+  ses.setActual++;
+
+  if(ses.setActual>ex.sets){
+    ses.ejercicioIdx++;
+    ses.setActual=1;
+    if(ses.ejercicioIdx>=rutina.ejercicios.length){
+      completarSesion();
+      return;
+    }
+    const sig=rutina.ejercicios[ses.ejercicioIdx];
+    const pr=S.prRecords[sig.id];
+    setCoach(`✅ **${ex.nombre}** listo.\n\nSiguiente: **${sig.nombre}** — ${sig.sets}×${sig.reps}\n${pr?`Última vez: ${pr.peso}kg × ${pr.reps}.`:'Primera vez con este.'}`);
+    const obs=notarObservacion(sig);
+    if(obs) setCoach(obs);
+  }
+
+  guardar();
+  renderEjercicio();
+}
+
+function completarSesion(){
+  const ses=S.sesionActiva;
+  ses.completada=true;ses.fechaFin=new Date().toISOString();
+  actualizarVolRecords(ses);
+  S.historialSesiones.push({...ses});
+  S.sesionActiva=null;
+  document.getElementById('session-badge').classList.remove('show');
+  document.getElementById('hdr-sub').textContent='Sesión completada 🔥';
+  document.getElementById('ex-card').style.display='none';
+  document.getElementById('set-btns').classList.remove('show');
+  document.getElementById('timer-card').classList.remove('show');
+  const {actual,anterior}=tonelajeSemanal();
+  const cmpTon=anterior>0?` Tonelaje semanal: ${actual}kg (${actual>=anterior?'+':''}${Math.round(((actual-anterior)/anterior)*100)}% vs semana pasada).`:'';
+  setCoach('🔥 **Sesión completa.** Excelente trabajo — Roma registró todo.'+cmpTon);
+  const sobrecarga=detectarSobrecarga();
+  if(sobrecarga) setCoach(sobrecarga);
+  guardar();
+  toast('🔥 Sesión completada');
+}
+
+// ═══════════════════════════════════════════════════════
+// INPUT — peso/reps O pregunta libre a Roma IA
+// ═══════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════
+// PERSONALIDAD DE ROMA — capa 1: el "alma", siempre va en el prompt,
+// pero es corta. No es una lista de reglas frías, es un retrato.
+// ═══════════════════════════════════════════════════════
+const PERSONALIDAD=`Eres Roma, el coach personal de Rodrigo. Lo conoces sesión por sesión — sus PRs, sus rachas, dónde se estanca. Hablas como alguien que quiere verlo progresar, no como un sargento ni como un cartel motivacional vacío. Celebras lo real (un PR, una subida de tonelaje, una racha) y eres honesta cuando algo no va bien, sin dureza gratuita. Sabes de sobrecarga progresiva, técnica y periodización, y lo usas para dar consejos específicos a él, no genéricos. Hablas español, cercana, sin relleno ni emojis de más.`;
+
+// ═══════════════════════════════════════════════════════
+// MANUAL DE ROMA — capa 2: la "base de datos" de coaching.
+// Vive en el código, NO se manda completa en cada llamada — eso
+// costaría tokens de más en cada mensaje. En vez de eso, una función
+// local (sin IA, gratis) elige solo el fragmento relevante al momento.
+// ═══════════════════════════════════════════════════════
+const ROMA_MANUAL={
+  sobrecarga:'Principio de sobrecarga progresiva: cada ejercicio necesita más estímulo con el tiempo —más peso, más reps o más series, casi nunca las tres a la vez. Si lleva 2+ sesiones sin mover ninguna, hay que ajustar algo.',
+  rpe:'RPE/RIR: la mayoría de series deben dejar 1-2 reps en reserva (RPE 8-9). Llegar al fallo en todo no es más efectivo, solo más fatiga.',
+  deload:'Si el rendimiento cae varias sesiones seguidas en distintos ejercicios a la vez, es fatiga acumulada, no falta de esfuerzo — toca una semana ligera, no más intensidad.',
+};
+function getManualSnippet(ses){
+  if(ses){
+    const ex=RUTINA[ses.dia]?.ejercicios[ses.ejercicioIdx];
+    if(ex&&notarObservacion(ex)) return ROMA_MANUAL.deload;
+  }
+  return ROMA_MANUAL.sobrecarga+' '+ROMA_MANUAL.rpe;
+}
+
+async function sendMsg(){
+  const inp=document.getElementById('inp');
+  const txt=inp.value.trim();
+  if(!txt) return;
+  inp.value='';
+  addUserMsg(txt);
+
+  // Si estamos esperando reporte, intentar procesar
+  if(_esperandoPeso&&S.sesionActiva){
+    if(procesarReporte(txt)) return;
+  }
+
+  // Pregunta libre — llamar Roma IA con historial completo (cerebro con memoria)
+  showTyping();
+  try{
+    const ses=S.sesionActiva;
+    const sesCtx=ses
+      ?`SESIÓN ACTIVA: ${ses.rutina}, ejercicio ${ses.ejercicioIdx+1}, set ${ses.setActual}/${RUTINA[ses.dia]?.ejercicios[ses.ejercicioIdx]?.sets||'?'}. Sets completados hoy: ${ses.sets.length}.`
+      :'Sin sesión activa ahora mismo.';
+    const prCtx=Object.keys(S.prRecords).length
+      ?'PRs: '+Object.entries(S.prRecords).slice(0,8).map(([id,p])=>`${id.replace(/_/g,' ')}: ${p.peso}kg×${p.reps}`).join(', ')
+      :'Sin PRs aún.';
+
+    const system=`${PERSONALIDAD}
+
+PERFIL: Peso 106kg, meta 85kg. Nivel avanzado. PPL x2 semanal. Equipo: máquinas y poleas. Prioridad: hombros anchos, espalda en V, bíceps.
+
+${sesCtx}
+${prCtx}
+
+PRINCIPIO RELEVANTE AHORA: ${getManualSnippet(ses)}
+
+REGLAS:
+- Ajusta el largo a la situación: corto y directo durante un set, más completo si te hacen una pregunta real
+- Nunca digas "no tengo interfaz visual" — tú eres el coach, la UI es otra cosa
+- Nunca pidas datos que ya tienes en el contexto
+- Si te reportan un set, da feedback específico sobre peso/reps
+- Siempre sabes en qué ejercicio y set va Rodrigo`;
+
+    // Incluir historial de conversación (cerebro con memoria)
+    S.romaHist.push({r:'user',t:txt});
+    if(S.romaHist.length>40) S.romaHist=S.romaHist.slice(-40);
+
+    const contents=S.romaHist.slice(-12).map(h=>({
+      role:h.r==='roma'?'model':'user',
+      parts:[{text:h.t}]
+    }));
+
+    const resp=await vertexGenerate(system,contents,300,0.8);
+    S.romaHist.push({r:'roma',t:resp});
+    if(S.romaHist.length>40) S.romaHist=S.romaHist.slice(-40);
+    guardar();
+    addCoachMsg(resp);
+  }catch(e){
+    addCoachMsg('Sin conexión. Sigue — Roma vuelve pronto.');
+    console.warn('[Roma]',e);
+  }
+}
+
+// ═══════════════════════════════════════════════════════
+// HISTORIAL
+// ═══════════════════════════════════════════════════════
+function renderHist(){
+  const el=document.getElementById('hist-content');
+  if(!S.historialSesiones.length){
+    el.innerHTML=`<div style="font-size:12px;color:var(--r5);text-align:center;padding:40px 0">Aún no hay sesiones registradas.</div>`;
+    return;
+  }
+  el.innerHTML=[...S.historialSesiones].reverse().map(ses=>{
+    const fecha=new Date(ses.fecha).toLocaleDateString('es-MX',{weekday:'long',day:'numeric',month:'short'});
+    const dur=ses.fechaFin?Math.round((new Date(ses.fechaFin)-new Date(ses.fecha))/60000)+'min':'—';
+    const setsResumen=ses.sets.map(s=>`<div class="hist-ex-item">${s.id.replace(/_/g,' ')} · Set ${s.set}: ${s.peso?s.peso+'kg':'—'} ${s.reps?'× '+s.reps+'reps':''}</div>`).join('');
+    return `<div class="hist-sesion-card">
+      <div class="hist-sesion-fecha">${fecha.toUpperCase()} · ${dur}</div>
+      <div class="hist-sesion-rutina">${ses.rutina}</div>
+      ${setsResumen||'<div class="hist-ex-item" style="color:var(--r4)">Sin sets registrados</div>'}
+    </div>`;
+  }).join('');
+}
+
+// ═══════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════
+(async function init(){
+  try{ await dbOpen(); await cargar(); }catch(e){ console.warn('DB no disponible',e); }
+
+  // Restaurar sesión activa si existe y es del día de hoy
+  if(S.sesionActiva&&!S.sesionActiva.completada&&S.sesionActiva.dia===DIAS[new Date().getDay()]){
+    document.getElementById('session-badge').classList.add('show');
+  }
+
+  renderInicio();
+  renderCoachThread();
+  showScreen('inicio');
+
+  // PWA — solo cache local, sin pedir ningún permiso al usuario
+  if('serviceWorker' in navigator){
+    navigator.serviceWorker.register('sw.js').catch(e=>console.warn('SW no registrado (¿se abrió como file:// ?)',e));
+  }
+})();
+</script>
+</body>
+</html>
